@@ -1,10 +1,14 @@
 # lib/models/user.py
-from models.__init__ import CURSOR, CONN
+    # Defines a class called 'User' representing user objects
+    # The script includes mthods to interact with a database (i.e. creating tables)
+    # Saving user instances to the database and retrieving user data from the database 
 
 
-class User:
+from .__init__ import db_connection, db_cursor #connection to the database 
 
-    # Dictionary of objects saved to the database.
+
+class User: # defines a class with attributes (username, email, and id)
+
     all = {}
 
     def __init__(self, username, email, id=None):
@@ -14,12 +18,12 @@ class User:
 
     def __repr__(self):
         return f"<User {self.id}: {self.username}, {self.email}>"
-
+    
     @property
     def username(self):
         return self._username
 
-    @name.setter
+    @username.setter
     def username(self, username):
         if isinstance(username, str) and len(username):
             self._username = username
@@ -42,69 +46,53 @@ class User:
             )
 
     @classmethod
-    def create_table(cls):
-        """ Create a new table to persist the attributes of Department instances """
+    def create_table(cls): # class method creates a table if it doesn't exist
         sql = """
-            CREATE TABLE IF NOT EXISTS departments (
+            CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             username TEXT,
             email TEXT)
         """
-        CURSOR.execute(sql)
-        CONN.commit()
+        db_cursor.execute(sql)  
+        db_connection.commit()
 
     @classmethod
-    def drop_table(cls):
-        """ Drop the table that persists User instances """
+    def drop_table(cls): # class method drops the tabl for the database if it exists 
         sql = """
-            DROP TABLE IF EXISTS user;
+            DROP TABLE IF EXISTS users;
         """
-        CURSOR.execute(sql)
-        CONN.commit()
+        db_cursor.execute(sql)
+        db_connection.commit()
 
-    def save(self):
-        """ Insert a new row with the username and email values of the current User instance.
-        Update object id attribute using the primary key value of new row.
-        Save the object in local dictionary using table row's PK as dictionary key"""
+    def save(self): # saves the current user object to the database by inserting a new row into the table with the attributes
         sql = """
-            INSERT INTO user (username, email)
-            VALUES (?, ?)
+            INSERT INTO users (username, email)
+            VALUES (?, ?) 
         """
+        db_cursor.execute(sql, (self.username, self.email))
+        db_connection.commit()
 
-        CURSOR.execute(sql, (self.name, self.location))
-        CONN.commit()
-
-        self.id = CURSOR.lastrowid
+        self.id = db_cursor.lastrowid
         type(self).all[self.id] = self
+ 
 
     @classmethod
-    def create(cls, username, email):
+    def create(cls, username, email): #creates a user by inputting a username and email, saving, and returning the new user object 
         """ Initialize a new User instance and save the object to the database """
         user = cls(username, email)
-        user.save()
+        print ("Before Save")
+        user.save() #insertion of data being handled by save method 
         return user
+        
 
-    def update(self):
-        """Update the table row corresponding to the current User instance."""
+    def delete(self): #deletes the current user object from the database based on the user id 
         sql = """
-            UPDATE user
-            SET username = ?, email = ?
-            WHERE id = ?
-        """
-        CURSOR.execute(sql, (self.username, self.email, self.id))
-        CONN.commit()
-
-    def delete(self):
-        """Delete the table row corresponding to the current User instance,
-        delete the dictionary entry, and reassign id attribute"""
-
-        sql = """
-            DELETE FROM user
+            DELETE FROM users
             WHERE id = ?
         """
 
-        CURSOR.execute(sql, (self.id,))
-        CONN.commit()
+        db_cursor.execute(sql, (self.id,))
+        db_connection.commit()
 
         # Delete the dictionary entry using id as the key
         del type(self).all[self.id]
@@ -113,68 +101,62 @@ class User:
         self.id = None
 
     @classmethod
-    def instance_from_db(cls, row):
-        """Return a User object having the attribute values from the table row."""
-
-        # Check the dictionary for an existing instance using the row's primary key
-        user = cls.all.get(row[0])
+    def instance_from_db(cls, row): #creates a user object from a database row 
+    
+        user = cls.all.get(row[0]) #attempts to retrieve a user from the all dictionary attribute of the class
         if user:
-            # ensure attributes match row values in case local instance was modified
             user.username = row[1]
             user.email = row[2]
         else:
-            # not in dictionary, create new instance and add to dictionary
             user = cls(row[1], row[2])
             user.id = row[0]
             cls.all[user.id] = user
         return user
 
     @classmethod
-    def get_all(cls):
-        """Return a list containing a User object per row in the table"""
+    def get_all(cls): #retrieves all user objects from the 'users' table and converts each row into an object using the instance_from_db()
         sql = """
             SELECT *
-            FROM user
+            FROM users
         """
 
-        rows = CURSOR.execute(sql).fetchall()
+        rows = db_cursor.execute(sql).fetchall()
 
         return [cls.instance_from_db(row) for row in rows]
 
     @classmethod
-    def find_by_id(cls, id):
-        """Return a User object corresponding to the table row matching the specified primary key"""
+    def find_by_id(cls, id): #retrieves a user object based on the id 
         sql = """
             SELECT *
-            FROM user
+            FROM users
             WHERE id = ?
         """
 
-        row = CURSOR.execute(sql, (id,)).fetchone()
+        row = db_cursor.execute(sql, (id,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
     @classmethod
-    def find_by_username(cls, username):
+    def find_by_username(cls, username): #retrieves a user object based on the username 
         """Return a User object corresponding to first table row matching specified name"""
         sql = """
             SELECT *
-            FROM user
-            WHERE name is ?
+            FROM users
+            WHERE username is ?
         """
 
-        row = CURSOR.execute(sql, (username,)).fetchone()
+        row = db_cursor.execute(sql, (username,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
-    def listings(self):
-        """Return list of listings associated with current user"""
-        from models.listings import Listing
+    def listings(self): #retrieves all listings associated with the current user object where the user table id matches the listings table user_id
+        from models.listing import Listing
         sql = """
             SELECT * FROM listings
-            WHERE department_id = ?
+            WHERE user_id = ?
         """
-        CURSOR.execute(sql, (self.id,),)
+        db_cursor.execute(sql, (self.id,),)
 
-        rows = CURSOR.fetchall()
+        rows = db_cursor.fetchall()
         return [
             Listing.instance_from_db(row) for row in rows
         ]
+
