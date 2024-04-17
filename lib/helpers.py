@@ -10,63 +10,65 @@ def exit_program():
 def list_users(): 
     users = User.get_all() 
     for user in users: 
-        print(user)
+        print(f'User: {user.username}, Email: {user.email}')
 
 def find_users_by_username():
     username = input("Enter the users's username: ")
     user = User.find_by_username(username)
-    print(user) if user else print(
+    print(f'User: {user.username}, Email: {user.email}') if user else print(
         f'User {username} not found') 
 
 def find_users_by_id(): 
     id_ = input("Enter the users's id: ")
     user = User.find_by_id(id_)
-    print(user) if user else print(f'User {id_} not found')
+    print(f'User: {user.username}, Email: {user.email}') if user else print(f'User {id_} not found')
 
 def create_user(): 
     username = input("Enter the user's username: ")
     email = input("Enter the users's email: ")
+    password = input("Enter the password: ")
     try:
-        user = User.create(username, email)
+        user = User.create(username, email, password)
         print(f'Success: {user}')
     except Exception as exc:
         print("Error creating user: ", exc)
 
 def delete_user(): 
-    id_ = input("Enter the user's id: ")
-    if user := User.find_by_id(id_):
+    password = input("Enter the user's password: ")
+    if user := User.find_by_password(password):
         user.delete()
-        print(f'User {id_} deleted')
+        print(f'User {user.username} deleted')
     else:
-        print(f'User {id_} not found')
+        print(f'User {user} not found')
 
 def list_listings(): 
     listings = Listing.get_all() 
     for listing in listings: 
-        print(listing)
+        print(f'{listing.title} for ${listing.price}')
 
 def find_listing_by_title(): 
     title = input("Enter the listing's title: ")
     listing = Listing.find_by_title(title)
-    print(listing) if listing else print(
-        f'Listing {title} not found') 
+    if listing:
+        print(f'{listing.title} for ${listing.price}')
+    else:
+        print(f'Listing {title} not found')
 
-def find_listing_by_id(): 
-    id_ = input("Enter the listing's id: ")
-    listing = Listing.find_by_id(id_)
-    print(listing) if listing else print(f'Listing {id_} not found')
+def find_listing_by_state(): 
+    state = input("Enter the listing's state: ")
+    listing = Listing.find_by_state(state)
+    print(f'{listing.title} located in {listing.state} for ${listing.price}') if listing else print(f'Listings in {state} not found')
 
 def create_listing(): 
     title = input("Enter the listings title: ")
     price = input("Enter the listings's price: ")
     username = input("Enter the username: ")
-    #print(f"Entered username: '{username}'") 
+    state = input("Enter the listings state: ")
 
     user = User.find_by_username(username)
-    #print(f"Retrieved user: {user}") 
     if user:
         try:
-            listing = Listing.create(title, price, user.id)
+            listing = Listing.create(title, price, state, user.id)
             print(f'Success: {listing}')
         except Exception as exc:
             print("Error creating listing: ", exc)
@@ -74,26 +76,21 @@ def create_listing():
         print(f"Error: User with username '{username}' not found.")
 
 
-def delete_listing(): 
+def delete_listing():
     id_ = input("Enter the listing's id: ")
+    password = input("Enter your password: ")
     if listing := Listing.find_by_id(id_):
-        listing.delete()
+        listing.delete(password)
         print(f'Listing {id_} deleted')
     else:
         print(f'Listing {id_} not found')
 
 def list_users_listings():
-    # Prompt the user for the username
     username = input("Enter the username: ")
-
-    # Find the user object based on the username
     user = User.find_by_username(username)
 
     if user:
-        # If the user is found, retrieve their listings
         user_listings = user.listings()
-
-        # Print the user's listings
         if user_listings:
             print(f"Listings for user {username}:")
             for listing in user_listings:

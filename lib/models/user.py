@@ -11,13 +11,14 @@ class User: # defines a class with attributes (username, email, and id)
 
     all = {}
 
-    def __init__(self, username, email, id=None):
+    def __init__(self, username, email, password, id=None):
         self.id = id
         self.username = username
         self.email = email
+        self.password = password 
 
     def __repr__(self):
-        return f"<User {self.id}: {self.username}, {self.email}>"
+        return f"<User {self.id}: {self.username}, {self.email}, {self.password}>"
     
     @property
     def username(self):
@@ -45,13 +46,15 @@ class User: # defines a class with attributes (username, email, and id)
                 "Email must be a non-empty string"
             )
 
+
     @classmethod
     def create_table(cls): # class method creates a table if it doesn't exist
         sql = """
             CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             username TEXT,
-            email TEXT)
+            email TEXT,
+            password TEXT)
         """
         db_cursor.execute(sql)  
         db_connection.commit()
@@ -66,10 +69,10 @@ class User: # defines a class with attributes (username, email, and id)
 
     def save(self): # saves the current user object to the database by inserting a new row into the table with the attributes
         sql = """
-            INSERT INTO users (username, email)
-            VALUES (?, ?) 
+            INSERT INTO users (username, email, password)
+            VALUES (?, ?, ?) 
         """
-        db_cursor.execute(sql, (self.username, self.email))
+        db_cursor.execute(sql, (self.username, self.email, self.password))
         db_connection.commit()
 
         self.id = db_cursor.lastrowid
@@ -77,28 +80,12 @@ class User: # defines a class with attributes (username, email, and id)
  
 
     @classmethod
-    def create(cls, username, email): #creates a user by inputting a username and email, saving, and returning the new user object 
+    def create(cls, username, email, password): #creates a user by inputting a username and email, saving, and returning the new user object 
         """ Initialize a new User instance and save the object to the database """
-        user = cls(username, email)
-        print ("Before Save")
+        user = cls(username, email, password)
         user.save() #insertion of data being handled by save method 
         return user
         
-
-    def delete(self): #deletes the current user object from the database based on the user id 
-        sql = """
-            DELETE FROM users
-            WHERE id = ?
-        """
-
-        db_cursor.execute(sql, (self.id,))
-        db_connection.commit()
-
-        # Delete the dictionary entry using id as the key
-        del type(self).all[self.id]
-
-        # Set the id to None
-        self.id = None
 
     @classmethod
     def instance_from_db(cls, row): #creates a user object from a database row 
@@ -107,8 +94,9 @@ class User: # defines a class with attributes (username, email, and id)
         if user:
             user.username = row[1]
             user.email = row[2]
+            user.password = row[3]
         else:
-            user = cls(row[1], row[2])
+            user = cls(row[1], row[2], row[3])
             user.id = row[0]
             cls.all[user.id] = user
         return user
@@ -133,6 +121,16 @@ class User: # defines a class with attributes (username, email, and id)
         """
 
         row = db_cursor.execute(sql, (id,)).fetchone()
+        return cls.instance_from_db(row) if row else None
+
+    @classmethod
+    def find_by_password(cls, password): 
+        sql = """
+            SELECT *
+            FROM users
+            WHERE password = ?
+        """
+        row = db_cursor.execute(sql, (password,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
     @classmethod

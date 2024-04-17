@@ -6,15 +6,16 @@ class Listing:
     # Dictionary of objects saved to the database.
     all = {}
 
-    def __init__(self, title, price, user_id, id=None):
+    def __init__(self, title, price, state, user_id, id=None):
         self.id = id
         self.title = title
         self.price = price
+        self.state = state
         self.user_id = user_id
 
     def __repr__(self):
         return (
-            f"<Listing {self.id}: {self.title}, {self.price}, " +
+            f"<Listing {self.id}: {self.title}, {self.price}, {self.state} " +
             f"User ID: {self.user_id}>"
         )
     #
@@ -42,7 +43,17 @@ class Listing:
         except ValueError:
             raise ValueError("Price must be an integer")
 
+    @property
+    def state(self):
+        return self._state
 
+    @state.setter
+    def state(self, state):
+        try:
+            self._state = str(state)
+        except ValueError:
+            raise ValueError("State must be a string")
+        
     @property
     def user_id(self):
         return self._user_id
@@ -56,7 +67,7 @@ class Listing:
     @classmethod
     def create_table(cls):
         sql = """
-            CREATE TABLE "listings" ( "id" INTEGER, "title" TEXT, "price" INTEGER, "user_id" INTEGER, PRIMARY KEY("id"), FOREIGN KEY("user_id") REFERENCES "users"("id") )
+            CREATE TABLE "listings" ( "id" INTEGER, "title" TEXT, "price" INTEGER, "state" TEXT, "user_id" INTEGER, PRIMARY KEY("id"), FOREIGN KEY("user_id") REFERENCES "users"("id") )
         """
         db_cursor.execute(sql)  
         db_connection.commit()
@@ -73,13 +84,11 @@ class Listing:
 
     def save(self):
         """ Save the object to the database """
-        print("Inside save method")
-        print("user_id:", self.user_id)
         sql = """
-            INSERT INTO listings (title, price, user_id)
-            VALUES (?, ?, ?)
+            INSERT INTO listings (title, price, state, user_id)
+            VALUES (?, ?, ?, ?)
         """
-        db_cursor.execute(sql, (self.title, self.price, self.user_id))
+        db_cursor.execute(sql, (self.title, self.price, self.state, self.user_id))
         db_connection.commit()
 
         self.id = db_cursor.lastrowid
@@ -88,25 +97,31 @@ class Listing:
         type(self).all[self.id] = self
 
 
-    def delete(self):
-        sql = """
-            DELETE FROM listings
-            WHERE id = ?
-        """
-
-        db_cursor.execute(sql, (self.id,))
-        db_connection.commit()
+    def delete(self, user_password):
+    # First, check if the provided user password matches the password stored in the database
+        user = User.find_by_password(user_password)
+        if user:
+        # If the user exists and the password is correct, proceed with deletion
+            sql = """
+                DELETE FROM listings
+                WHERE id = ?
+            """
+            db_cursor.execute(sql, (self.id,))
+            db_connection.commit()
 
         # Delete the dictionary entry using id as the key
-        del type(self).all[self.id]
+            del type(self).all[self.id]
 
         # Set the id to None
-        self.id = None
+            self.id = None
+            print("Listing deleted successfully.")
+        else:
+            print("User authentication failed. Listing not deleted.")
 
     @classmethod
-    def create(cls, title, price, user_id):
+    def create(cls, title, price, state, user_id):
         """ a new Listing instance and save the to the database """
-        listing = cls(title, price, user_id)
+        listing = cls(title, price, state, user_id)
         listing.save()
         return listing
     
@@ -114,20 +129,24 @@ class Listing:
     @classmethod
     def instance_from_db(cls, row):
         """Return a Listing object having the attribute values from the table row."""
-
+        if row:
         # Check the dictionary for  existing instance using the row's primary key
-        listing = cls.all.get(row[0])
-        if listing:
+            listing = cls.all.get(row[0])
+            if listing:
             # ensure attributes match row values in case local instance was modified
-            listing.title = row[1]
-            listing.price = row[2]
-            listing.user_id = row[3]
-        else:
+                listing.title = row[1]
+                listing.price = row[2]
+                listing.user_id = row[3]
+                listing.state = row[4]
+    
+            else:
             # not in dictionary, create new instance and add to dictionary
-            listing = cls(row[1], row[2], row[3])
-            listing.id = row[0]
-            cls.all[listing.id] = listing
-        return listing
+                listing = cls(row[1], row[2], row[3], row[4])
+                listing.id = row[0]
+                cls.all[listing.id] = listing
+            return listing
+        else:
+            return None
 
 
     @classmethod
@@ -141,17 +160,29 @@ class Listing:
         rows = db_cursor.execute(sql).fetchall()
 
         return [cls.instance_from_db(row) for row in rows]
-
+    
     @classmethod
-    def find_by_id(cls, id):
-        """Return Listing object corresponding to the table row matching the specified primary key"""
+    def find_by_id(cls, id_):
+        """Return Listing object corresponding to the table row matching the ID."""
         sql = """
-            SELECT *
-            FROM listings
-            WHERE id = ?
+        SELECT *
+        FROM listings
+        WHERE id = ?
         """
 
-        row = db_cursor.execute(sql, (id,)).fetchone()
+        row = db_cursor.execute(sql, (id_,)).fetchone()
+        return cls.instance_from_db(row) if row else None
+
+    @classmethod
+    def find_by_state(cls, state):
+        """Return Listing object corresponding to the table row matching the state"""
+        sql = """
+        SELECT *
+        FROM listings
+        WHERE state = ?
+        """
+
+        row = db_cursor.execute(sql, (state,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
     @classmethod
