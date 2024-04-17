@@ -94,7 +94,7 @@ def list_users_listings():
         if user_listings:
             print(f"Listings for user {username}:")
             for listing in user_listings:
-                print(listing)
+                print(f'{listing.title} for ${listing.price}')
         else:
             print(f"No listings found for user {username}")
     else:
