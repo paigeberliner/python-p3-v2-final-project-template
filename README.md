@@ -1,6 +1,6 @@
 Marketplace CLI Application 
 
-Overview: This is a command-line interface (CLI) application built with Python. Users can interact with the application through their terminal to perform various actions such as searching for listings, creating a user profile, creating listings for items they want to sell, and deleting their own listings. All data is stored in a SQLite database and managed using SQL queries executed within the Python application.
+Overview: This project is a python application that includes a command-line interface (CLI). Users can interact with the application through their terminal to perform various actions such as searching for listings, creating a user profile, creating listings for items they want to sell, and deleting their own listings. All data is stored in a SQLite database and managed using SQL queries executed within the Python application.
 
 Features: 
 - List users seling items  

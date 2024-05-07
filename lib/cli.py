@@ -2,7 +2,6 @@ from helpers import (
     exit_program,
     list_users, 
     find_users_by_username, 
-    find_users_by_id, 
     create_user,  
     list_listings, 
     find_listing_by_title, 
@@ -24,8 +23,6 @@ def main():
         elif choice == "2a":
             find_users_by_username()
         elif choice == "3a":
-            find_users_by_id()
-        elif choice == "4a":
             create_user()
         elif choice == "1b":
             list_listings()
@@ -48,8 +45,7 @@ def menu():
     print("Are you interested in finding a specific seller?")
     print("1a. List all users selling items")
     print("2a. Find users selling items by username")
-    print("3a. Find users by id")
-    print("4a. Create a user")
+    print("3a. Create a user")
     print("Are you interested in finding a specific listing?")
     print("1b. List listings")
     print("2b. Find listing by title")

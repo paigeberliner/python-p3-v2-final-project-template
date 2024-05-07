@@ -17,8 +17,8 @@ class User: # defines a class with attributes (username, email, and id)
         self.email = email
         self.password = password 
 
-    def __repr__(self):
-        return f"<User {self.id}: {self.username}, {self.email}, {self.password}>"
+    #def __repr__(self):
+        #return f"<User {self.id}: {self.username}, {self.email}, {self.password}>"
     
     @property
     def username(self):
