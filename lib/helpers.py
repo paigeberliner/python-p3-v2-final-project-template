@@ -7,8 +7,6 @@ def exit_program():
     print("Goodbye!")
     exit()
 
-
-
 def list_users(): 
     users = User.get_all() 
     if users:
@@ -53,7 +51,7 @@ def create_user():
 
 def delete_user(): 
     username = input("Enter the user's username: ")
-    password = input("Enter the password: ")
+    password = input("Enter the admin password: ")
     try: 
         user = User.find_by_username(username)
         if user:
@@ -68,10 +66,7 @@ def delete_user():
     except Exception as exc:
         print("Error deleting user: ", exc)
 
-
-
 def list_listings(user): 
-    #listings = Listing.get_all() 
     listings = user.listings
     if listings: 
         print("____________________")
@@ -84,42 +79,13 @@ def list_listings(user):
     else: 
         print('Listing not found')
 
-def find_listing_by_title(): 
-    title = input("Enter the listing's title: ")
-    listing = Listing.find_by_title(title)
-    if listing:
-        print("____________________")
-        print("")
-        print(f'{listing.title} for ${listing.price}')
-        print("____________________")
-        print("")
-    else:
-        print(f'Listing {title} not found')
-
-def find_listing_by_state(): 
-    state = input("Enter the listing's state: ")
-    listing = Listing.find_by_state(state)
-    if listing:
-        print("____________________")
-        print("")
-        print(f'{listing.title} located in {listing.state} for ${listing.price}') 
-        print("____________________")
-        print("")
-    else:
-        print(f'Listings in {state} not found')
-
 def create_listing(user): 
     title = input("Enter the listings title: ")
     price = input("Enter the listings's price: ")
-    state = input("Enter the listings's state: ")
-
-    #username = input("Enter the username: ")
-    #state = input("Enter the listings state: ")
-
-    #user = User.find_by_username(username)
+    
     if user:
         try:
-            listing = Listing.create(user, title, price, state, user.id)
+            listing = Listing.create(user, title, price, user.id)
             print("____________________")
             print("")
             print(f'Success: {listing.title} has been created')
@@ -131,8 +97,6 @@ def create_listing(user):
 def delete_listing(user):
     title = input("Enter the listing's title: ")
     password = input("Enter the seller's admin password: ")
-
-    # Check if the provided password matches the user's password
     if user.password == password:
         listing = Listing.find_by_title(title)
         if listing and listing.user_id == user.id:
@@ -145,32 +109,27 @@ def delete_listing(user):
         else:
             print("Listing not found or you do not have permission to delete it.")
     else:
-        print("Incorrect password. Listing not deleted.")
+            print("Incorrect admin password. Listing not deleted.")
 
 def select_user(): 
     users = list_users()
     enter_number = input("Enter number from the users listed above: ")
-    #check to make sure number exists 
     user = users[int(enter_number) - 1]
     return user 
             
-
 def list_users_listings(user):
-    #username = input("Enter the username: ")
-    #user = User.find_by_username(username)
-    
     if user:
         user_listings = user.listings()
         if user_listings:
             print("____________________")
             print("")
-            print(f"Listings for user {user}:")
+            print(f"Listings in {user.username}'s store:")
             for listing in user_listings:
                 print(f'{listing.title} for ${listing.price}')
             print("____________________")
             print("")
         else:
-            print(f"No listings found for user {user}")
+            print(f"No listings found in {user}'s store")
     else:
-        print(f"User with username {user} not found.")
+        print(f"Seller with username {user} not found.")
 

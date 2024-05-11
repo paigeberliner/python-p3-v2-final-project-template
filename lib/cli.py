@@ -4,9 +4,6 @@ from helpers import (
     find_users_by_username, 
     create_user,
     delete_user,  
-    list_listings, 
-    #find_listing_by_title, 
-    #find_listing_by_state,
     create_listing,
     delete_listing,
     select_user,
@@ -31,24 +28,6 @@ def main():
         elif choice == "5": 
             user = select_user()
             listings_loop(user)
-            
-
-
-            
-        # elif choice == "1b":
-        #     list_listings()
-        # elif choice == "2b":
-        #     find_listing_by_title()
-        # elif choice == "3b":
-        #     find_listing_by_state()
-        # elif choice == "4b":
-        #     create_listing()
-        # elif choice == "5b":
-        #     delete_listing()
-        # elif choice == "6b":
-        #     list_users_listings()
-        # else:
-        #     print("Invalid choice")
 
 def listings_loop(user):
     while True:
@@ -79,12 +58,6 @@ def listings_menu(user):
     print(f"2. Create a listing for seller {user.username}")
     print(f"3. Delete a listing for seller {user.username}")
     print(f'4. Go to main menu')
-    #print("1b. List listings")
-    #print("2b. Find listing by title")
-    #print("3b. Find listing by state")
-    #print("4b. Create a listing")
-    #print("5b. Delete your listing")  
-    #print("6b. List all users listings")
     print("PRESS 0 to exit marketplace")
 
 

@@ -3,21 +3,20 @@ from .__init__ import db_connection, db_cursor
 from models.user import User
 
 class Listing: 
-    # Dictionary of objects saved to the database.
+    # Dictionary of objects saved to the database
     all = {}
 
-    def __init__(self, title, price, state, user_id, id=None):
+    def __init__(self, title, price, user_id, id=None):
         self.id = id
         self.title = title
         self.price = price
-        self.state = state
         self.user_id = user_id
 
-    def __repr__(self):
+    '''def __repr__(self):
         return (
             f"<Listing {self.id}: {self.title}, {self.price}, {self.state} " +
             f"User ID: {self.user_id}>"
-        )
+        )'''
     #
     @property
     def title(self):
@@ -42,17 +41,6 @@ class Listing:
             self._price = int(price)
         except ValueError:
             raise ValueError("Price must be an integer")
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, state):
-        try:
-            self._state = str(state)
-        except ValueError:
-            raise ValueError("State must be a string")
         
     @property
     def user_id(self):
@@ -60,14 +48,14 @@ class Listing:
 
     def user_id(self, user_id):
         try:
-            user_id = int(user_id)  # Convert to integer
+            user_id = int(user_id)
         except ValueError:
             raise ValueError("User_id must be an integer")
 
     @classmethod
     def create_table(cls):
         sql = """
-            CREATE TABLE "listings" ( "id" INTEGER, "title" TEXT, "price" INTEGER, "state" TEXT, "user_id" INTEGER, PRIMARY KEY("id"), FOREIGN KEY("user_id") REFERENCES "users"("id") )
+            CREATE TABLE "listings" ( "id" INTEGER, "title" TEXT, "price" INTEGER, "user_id" INTEGER, PRIMARY KEY("id"), FOREIGN KEY("user_id") REFERENCES "users"("id") )
         """
         db_cursor.execute(sql)  
         db_connection.commit()
@@ -85,10 +73,10 @@ class Listing:
     def save(self):
         """ Save the object to the database """
         sql = """
-            INSERT INTO listings (title, price, state, user_id)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO listings (title, price, user_id)
+            VALUES (?, ?, ?)
         """
-        db_cursor.execute(sql, (self.title, self.price, self.state, self.user_id))
+        db_cursor.execute(sql, (self.title, self.price, self.user_id))
         db_connection.commit()
 
         self.id = db_cursor.lastrowid
@@ -111,17 +99,14 @@ class Listing:
 
         # Delete the dictionary entry using id as the key
             del type(self).all[self.id]
-
+            
         # Set the id to None
             self.id = None
-            print("Listing deleted successfully.")
-        else:
-            print("User authentication failed. Listing not deleted.")
 
     @classmethod
-    def create(cls, user, title, price, state, user_id):
+    def create(cls, user, title, price, user_id):
         """ a new Listing instance and save the to the database """
-        listing = cls(title, price, state, user_id)
+        listing = cls(title, price, user_id)
         listing.save()
         return listing
     
@@ -137,7 +122,7 @@ class Listing:
                 listing.title = row[1]
                 listing.price = row[2]
                 listing.user_id = row[3]
-                listing.state = row[4]
+                
     
             else:
             # not in dictionary, create new instance and add to dictionary
@@ -173,17 +158,6 @@ class Listing:
         row = db_cursor.execute(sql, (id_,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
-    @classmethod
-    def find_by_state(cls, state):
-        """Return Listing object corresponding to the table row matching the state"""
-        sql = """
-        SELECT *
-        FROM listings
-        WHERE state = ?
-        """
-
-        row = db_cursor.execute(sql, (state,)).fetchone()
-        return cls.instance_from_db(row) if row else None
 
     @classmethod
     def find_by_title(cls, title):
