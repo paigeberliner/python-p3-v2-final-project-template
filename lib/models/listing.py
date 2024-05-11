@@ -119,7 +119,7 @@ class Listing:
             print("User authentication failed. Listing not deleted.")
 
     @classmethod
-    def create(cls, title, price, state, user_id):
+    def create(cls, user, title, price, state, user_id):
         """ a new Listing instance and save the to the database """
         listing = cls(title, price, state, user_id)
         listing.save()

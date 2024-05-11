@@ -59,6 +59,7 @@ class User: # defines a class with attributes (username, email, and id)
         db_cursor.execute(sql)  
         db_connection.commit()
 
+
     @classmethod
     def drop_table(cls): # class method drops the tabl for the database if it exists 
         sql = """
@@ -77,6 +78,27 @@ class User: # defines a class with attributes (username, email, and id)
 
         self.id = db_cursor.lastrowid
         type(self).all[self.id] = self
+    
+    def delete(self, password):
+    # First, check if the provided user password matches the password stored in the database
+        if self.password == password:
+        # If the password is correct, proceed with deletion
+            sql = """
+                DELETE FROM users
+                WHERE id = ?
+            """
+            db_cursor.execute(sql, (self.id,))
+            db_connection.commit()
+
+            # Delete the dictionary entry using id as the key
+            del type(self).all[self.id]
+
+            # Set the id to None
+            self.id = None
+            print("User deleted successfully.")
+        else:
+            print("User authentication failed. User not deleted.")
+    
  
 
     @classmethod
@@ -85,7 +107,7 @@ class User: # defines a class with attributes (username, email, and id)
         user = cls(username, email, password)
         user.save() #insertion of data being handled by save method 
         return user
-        
+    
 
     @classmethod
     def instance_from_db(cls, row): #creates a user object from a database row 
@@ -112,13 +134,13 @@ class User: # defines a class with attributes (username, email, and id)
 
         return [cls.instance_from_db(row) for row in rows]
 
-    @classmethod
-    def find_by_id(cls, id): #retrieves a user object based on the id 
-        sql = """
-            SELECT *
-            FROM users
-            WHERE id = ?
-        """
+    #@classmethod
+    #def find_by_id(cls, id): #retrieves a user object based on the id 
+       # sql = """
+            #SELECT *
+            #FROM users
+            #WHERE id = ?
+        #"""
 
         row = db_cursor.execute(sql, (id,)).fetchone()
         return cls.instance_from_db(row) if row else None
