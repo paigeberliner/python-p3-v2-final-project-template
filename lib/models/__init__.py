@@ -1,6 +1,6 @@
 # lib/models/__init__.py
     #Established a connection to the SQLlite database data.db
-    #Ereates a cursor object for executing SQL statements on that database 
+    #Creates a cursor object for executing SQL statements on that database 
 
 import sqlite3
 

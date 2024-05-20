@@ -55,18 +55,20 @@ def delete_user():
     try: 
         user = User.find_by_username(username)
         if user:
-            user.delete(password)
-            print("____________________")
-            print("")
-            print(f'Success: Seller {user.username} has been removed from the marketplace')
-            print("____________________")
-            print("")
+            if user.delete(password):
+                print("____________________")
+                print("")
+                print(f'Success: Seller {user.username} has been removed from the marketplace')
+                print("____________________")
+                print("")
+            else:
+                print("User authentication failed. User not deleted.")
         else:
             print("User not found.")
     except Exception as exc:
         print("Error deleting user: ", exc)
 
-def list_listings(user): 
+'''def list_listings(user): 
     listings = user.listings
     if listings: 
         print("____________________")
@@ -77,7 +79,7 @@ def list_listings(user):
         print("____________________")
         print("")
     else: 
-        print('Listing not found')
+        print('Listing not found')'''
 
 def create_listing(user): 
     title = input("Enter the listings title: ")

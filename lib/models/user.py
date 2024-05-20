@@ -7,7 +7,7 @@
 from .__init__ import db_connection, db_cursor #connection to the database 
 
 
-class User: # defines a class with attributes (username, email, and id)
+class User: 
 
     all = {}
 
@@ -77,7 +77,7 @@ class User: # defines a class with attributes (username, email, and id)
         db_connection.commit()
 
         self.id = db_cursor.lastrowid
-        type(self).all[self.id] = self
+        type(self).all[self.id] = self #get the type of an object and adds the current object to the class-level dictionary 'all'
     
     def delete(self, password):
     # First, check if the provided user password matches the password stored in the database
@@ -86,18 +86,19 @@ class User: # defines a class with attributes (username, email, and id)
             sql = """
                 DELETE FROM users
                 WHERE id = ?
-            """
+        """
             db_cursor.execute(sql, (self.id,))
             db_connection.commit()
 
-            # Delete the dictionary entry using id as the key
+        # Delete the dictionary entry using id as the key
             del type(self).all[self.id]
 
-            # Set the id to None
+        # Set the id to None
             self.id = None
-            print("User deleted successfully.")
+            return True  # Return True to indicate successful deletion
         else:
-            print("User authentication failed. User not deleted.")
+            return False  # Return False to indicate authentication failure
+
     
  
 
@@ -134,9 +135,9 @@ class User: # defines a class with attributes (username, email, and id)
 
         return [cls.instance_from_db(row) for row in rows]
 
-    #@classmethod
-    #def find_by_id(cls, id): #retrieves a user object based on the id 
-       # sql = """
+    @classmethod
+    def find_by_id(cls, id): #retrieves a user object based on the id 
+        sql = """
             #SELECT *
             #FROM users
             #WHERE id = ?

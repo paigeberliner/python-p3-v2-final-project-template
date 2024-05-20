@@ -51,6 +51,7 @@ def menu():
     print("3. Add a new seller to the marketplace")
     print("4. Remove a seller from the marketplace")
     print("5. Select a seller and make updates to their listings")
+    print("PRESS 0 to exit marketplace")
 
 
 def listings_menu(user):
